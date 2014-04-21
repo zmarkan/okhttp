@@ -214,8 +214,9 @@ public final class Response {
   public interface Receiver {
     /**
      * Called when the request could not be executed due to a connectivity
-     * problem or timeout. Because networks can fail during an exchange, it is
-     * possible that the remote server accepted the request before the failure.
+     * problem, cancellation or timeout. Because networks can fail during an
+     * exchange, it is possible that the remote server accepted the request
+     * before the failure.
      */
     void onFailure(Failure failure);
 

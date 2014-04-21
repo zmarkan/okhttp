@@ -310,6 +310,23 @@ public final class SyncApiTest {
     assertEquals(1, request2.getSequenceNumber());
   }
 
+  @Test public void syncRequestsCannotBeCancelled() throws Exception {
+    server.setDispatcher(new com.squareup.okhttp.mockwebserver.Dispatcher() {
+      @Override public MockResponse dispatch(RecordedRequest request) {
+        client.cancel("request A");
+        return new MockResponse().setBody("A");
+      }
+    });
+    server.play();
+
+    Request request = new Request.Builder().url(server.getUrl("/a")).tag("request A").build();
+
+    onSuccess(request)
+        .assertCode(200)
+        .assertBody("A");
+  }
+
+
   private RecordedResponse onSuccess(Request request) throws IOException {
     Response response = client.execute(request);
     return new RecordedResponse(request, response, response.body().string(), null);

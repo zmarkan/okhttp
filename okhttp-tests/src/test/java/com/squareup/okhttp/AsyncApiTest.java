@@ -279,7 +279,7 @@ public final class AsyncApiTest {
     receiver.await(server.getUrl("/20")).assertFailure("Too many redirects: 21");
   }
 
-  @Test public void canceledBeforeResponseReadIsNeverDelivered() throws Exception {
+  @Test public void canceledBeforeResponseReadSignalsOnFailure() throws Exception {
     client.getDispatcher().setMaxRequests(1); // Force requests to be executed serially.
     server.setDispatcher(new Dispatcher() {
       char nextResponse = 'A';
@@ -291,7 +291,7 @@ public final class AsyncApiTest {
     server.play();
 
     // Canceling a request after the server has received a request but before
-    // it has delivered the response. That request will never be received to the
+    // it has delivered the response. That response will never be received to the
     // client.
     Request requestA = new Request.Builder().url(server.getUrl("/a")).tag("request A").build();
     client.enqueue(requestA, receiver);
@@ -304,9 +304,8 @@ public final class AsyncApiTest {
     assertEquals("/b", server.takeRequest().getPath());
     receiver.await(requestB.url()).assertBody("B");
 
-    // At this point we know the receiver is ready: if it hasn't received 'A'
-    // yet it never will.
-    receiver.assertNoResponse(requestA.url());
+    // At this point we know the receiver is ready, and that it will receive a cancel failure.
+    receiver.await(requestA.url()).assertFailure("Cancelled after receiving response.");
   }
 
   @Test public void canceledAfterResponseIsDeliveredDoesNothing() throws Exception {

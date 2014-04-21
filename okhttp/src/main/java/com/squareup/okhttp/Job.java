@@ -24,6 +24,7 @@ import java.io.IOException;
 import java.net.ProtocolException;
 import java.net.Proxy;
 import java.net.URL;
+import java.util.concurrent.CancellationException;
 import okio.BufferedSink;
 import okio.BufferedSource;
 import okio.Okio;
@@ -73,7 +74,12 @@ final class Job extends NamedRunnable {
   @Override protected void execute() {
     try {
       Response response = getResponse();
-      if (response != null && !canceled) {
+      if (canceled) {
+        responseReceiver.onFailure(new Failure.Builder()
+            .request(request)
+            .exception(new CancellationException("Cancelled after receiving response."))
+            .build());
+      } else {
         responseReceiver.onResponse(response);
       }
     } catch (IOException e) {
