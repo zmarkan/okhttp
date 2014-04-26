@@ -65,6 +65,218 @@ public final class CallTest {
     cache.delete();
   }
 
+  @Test public void get() throws Exception {
+    server.enqueue(new MockResponse().setBody("abc").addHeader("Content-Type: text/plain"));
+    server.play();
+
+    Request request = new Request.Builder()
+        .url(server.getUrl("/"))
+        .header("User-Agent", "SyncApiTest")
+        .build();
+
+    executeSynchronously(request)
+        .assertCode(200)
+        .assertHeader("Content-Type", "text/plain")
+        .assertBody("abc");
+
+    RecordedRequest recordedRequest = server.takeRequest();
+    assertEquals("GET", recordedRequest.getMethod());
+    assertEquals("SyncApiTest", recordedRequest.getHeader("User-Agent"));
+    assertEquals(0, recordedRequest.getBody().length);
+    assertNull(recordedRequest.getHeader("Content-Length"));
+  }
+
+  @Test public void get_SPDY_3() throws Exception {
+    enableNpn(Protocol.SPDY_3);
+    get();
+  }
+
+  @Test public void get_HTTP_2() throws Exception {
+    enableNpn(Protocol.HTTP_2);
+    get();
+  }
+
+  @Test public void head() throws Exception {
+    server.enqueue(new MockResponse().addHeader("Content-Type: text/plain"));
+    server.play();
+
+    Request request = new Request.Builder()
+        .url(server.getUrl("/"))
+        .head()
+        .header("User-Agent", "SyncApiTest")
+        .build();
+
+    executeSynchronously(request)
+        .assertCode(200)
+        .assertHeader("Content-Type", "text/plain");
+
+    RecordedRequest recordedRequest = server.takeRequest();
+    assertEquals("HEAD", recordedRequest.getMethod());
+    assertEquals("SyncApiTest", recordedRequest.getHeader("User-Agent"));
+    assertEquals(0, recordedRequest.getBody().length);
+    assertNull(recordedRequest.getHeader("Content-Length"));
+  }
+
+  @Test public void head_SPDY_3() throws Exception {
+    enableNpn(Protocol.SPDY_3);
+    head();
+  }
+
+  @Test public void head_HTTP_2() throws Exception {
+    enableNpn(Protocol.HTTP_2);
+    head();
+  }
+
+  @Test public void post() throws Exception {
+    server.enqueue(new MockResponse().setBody("abc"));
+    server.play();
+
+    Request request = new Request.Builder()
+        .url(server.getUrl("/"))
+        .post(Request.Body.create(MediaType.parse("text/plain"), "def"))
+        .build();
+
+    executeSynchronously(request)
+        .assertCode(200)
+        .assertBody("abc");
+
+    RecordedRequest recordedRequest = server.takeRequest();
+    assertEquals("POST", recordedRequest.getMethod());
+    assertEquals("def", recordedRequest.getUtf8Body());
+    assertEquals("3", recordedRequest.getHeader("Content-Length"));
+    assertEquals("text/plain; charset=utf-8", recordedRequest.getHeader("Content-Type"));
+  }
+
+  @Test public void post_SPDY_3() throws Exception {
+    enableNpn(Protocol.SPDY_3);
+    post();
+  }
+
+  @Test public void post_HTTP_2() throws Exception {
+    enableNpn(Protocol.HTTP_2);
+    post();
+  }
+
+  @Test public void postZeroLength() throws Exception {
+    server.enqueue(new MockResponse().setBody("abc"));
+    server.play();
+
+    Request request = new Request.Builder()
+        .url(server.getUrl("/"))
+        .method("POST", null)
+        .build();
+
+    executeSynchronously(request)
+        .assertCode(200)
+        .assertBody("abc");
+
+    RecordedRequest recordedRequest = server.takeRequest();
+    assertEquals("POST", recordedRequest.getMethod());
+    assertEquals(0, recordedRequest.getBody().length);
+    assertEquals("0", recordedRequest.getHeader("Content-Length"));
+    assertEquals(null, recordedRequest.getHeader("Content-Type"));
+  }
+
+  @Test public void postZeroLength_SPDY_3() throws Exception {
+    enableNpn(Protocol.SPDY_3);
+    postZeroLength();
+  }
+
+  @Test public void postZerolength_HTTP_2() throws Exception {
+    enableNpn(Protocol.HTTP_2);
+    postZeroLength();
+  }
+
+  @Test public void delete() throws Exception {
+    server.enqueue(new MockResponse().setBody("abc"));
+    server.play();
+
+    Request request = new Request.Builder()
+        .url(server.getUrl("/"))
+        .delete()
+        .build();
+
+    executeSynchronously(request)
+        .assertCode(200)
+        .assertBody("abc");
+
+    RecordedRequest recordedRequest = server.takeRequest();
+    assertEquals("DELETE", recordedRequest.getMethod());
+    assertEquals(0, recordedRequest.getBody().length);
+    assertEquals("0", recordedRequest.getHeader("Content-Length"));
+    assertEquals(null, recordedRequest.getHeader("Content-Type"));
+  }
+
+  @Test public void delete_SPDY_3() throws Exception {
+    enableNpn(Protocol.SPDY_3);
+    delete();
+  }
+
+  @Test public void delete_HTTP_2() throws Exception {
+    enableNpn(Protocol.HTTP_2);
+    delete();
+  }
+
+  @Test public void put() throws Exception {
+    server.enqueue(new MockResponse().setBody("abc"));
+    server.play();
+
+    Request request = new Request.Builder()
+        .url(server.getUrl("/"))
+        .put(Request.Body.create(MediaType.parse("text/plain"), "def"))
+        .build();
+
+    executeSynchronously(request)
+        .assertCode(200)
+        .assertBody("abc");
+
+    RecordedRequest recordedRequest = server.takeRequest();
+    assertEquals("PUT", recordedRequest.getMethod());
+    assertEquals("def", recordedRequest.getUtf8Body());
+    assertEquals("3", recordedRequest.getHeader("Content-Length"));
+    assertEquals("text/plain; charset=utf-8", recordedRequest.getHeader("Content-Type"));
+  }
+
+  @Test public void put_SPDY_3() throws Exception {
+    enableNpn(Protocol.SPDY_3);
+    put();
+  }
+
+  @Test public void put_HTTP_2() throws Exception {
+    enableNpn(Protocol.HTTP_2);
+    put();
+  }
+
+  @Test public void patch() throws Exception {
+    server.enqueue(new MockResponse().setBody("abc"));
+    server.play();
+
+    Request request = new Request.Builder()
+        .url(server.getUrl("/"))
+        .patch(Request.Body.create(MediaType.parse("text/plain"), "def"))
+        .build();
+
+    executeSynchronously(request)
+        .assertCode(200)
+        .assertBody("abc");
+
+    RecordedRequest recordedRequest = server.takeRequest();
+    assertEquals("PATCH", recordedRequest.getMethod());
+    assertEquals("def", recordedRequest.getUtf8Body());
+    assertEquals("3", recordedRequest.getHeader("Content-Length"));
+    assertEquals("text/plain; charset=utf-8", recordedRequest.getHeader("Content-Type"));
+  }
+
+  @Test public void patch_SPDY_3() throws Exception {
+    enableNpn(Protocol.SPDY_3);
+    patch();
+  }
+
+  @Test public void patch_HTTP_2() throws Exception {
+    enableNpn(Protocol.HTTP_2);
+    patch();
+  }
+
   @Test public void illegalToExecuteTwice() throws Exception {
     server.enqueue(new MockResponse()
         .setBody("abc")
@@ -127,25 +339,6 @@ public final class CallTest {
     assertTrue(server.takeRequest().getHeaders().contains("User-Agent: SyncApiTest"));
   }
 
-  @Test public void get() throws Exception {
-    server.enqueue(new MockResponse()
-        .setBody("abc")
-        .addHeader("Content-Type: text/plain"));
-    server.play();
-
-    Request request = new Request.Builder()
-        .url(server.getUrl("/"))
-        .header("User-Agent", "SyncApiTest")
-        .build();
-
-    executeSynchronously(request)
-        .assertCode(200)
-        .assertContainsHeaders("Content-Type: text/plain")
-        .assertBody("abc");
-
-    assertTrue(server.takeRequest().getHeaders().contains("User-Agent: SyncApiTest"));
-  }
-
   @Test public void get_Async() throws Exception {
     server.enqueue(new MockResponse()
         .setBody("abc")
@@ -160,7 +353,7 @@ public final class CallTest {
 
     callback.await(request.url())
         .assertCode(200)
-        .assertContainsHeaders("Content-Type: text/plain")
+        .assertHeader("Content-Type", "text/plain")
         .assertBody("abc");
 
     assertTrue(server.takeRequest().getHeaders().contains("User-Agent: AsyncApiTest"));
@@ -340,25 +533,6 @@ public final class CallTest {
     assertEquals(301, response.code());
   }
 
-  @Test public void post() throws Exception {
-    server.enqueue(new MockResponse().setBody("abc"));
-    server.play();
-
-    Request request = new Request.Builder()
-        .url(server.getUrl("/"))
-        .post(Request.Body.create(MediaType.parse("text/plain"), "def"))
-        .build();
-
-    executeSynchronously(request)
-        .assertCode(200)
-        .assertBody("abc");
-
-    RecordedRequest recordedRequest = server.takeRequest();
-    assertEquals("def", recordedRequest.getUtf8Body());
-    assertEquals("3", recordedRequest.getHeader("Content-Length"));
-    assertEquals("text/plain; charset=utf-8", recordedRequest.getHeader("Content-Type"));
-  }
-
   @Test public void post_Async() throws Exception {
     server.enqueue(new MockResponse().setBody("abc"));
     server.play();
@@ -508,10 +682,10 @@ public final class CallTest {
         .assertBody("C")
         .redirectedBy()
         .assertCode(302)
-        .assertContainsHeaders("Test: Redirect from /b to /c")
+        .assertHeader("Test", "Redirect from /b to /c")
         .redirectedBy()
         .assertCode(301)
-        .assertContainsHeaders("Test: Redirect from /a to /b");
+        .assertHeader("Test", "Redirect from /a to /b");
 
     assertEquals(0, server.takeRequest().getSequenceNumber()); // New connection.
     assertEquals(1, server.takeRequest().getSequenceNumber()); // Connection reused.
@@ -540,10 +714,10 @@ public final class CallTest {
         .assertBody("C")
         .redirectedBy()
         .assertCode(302)
-        .assertContainsHeaders("Test: Redirect from /b to /c")
+        .assertHeader("Test", "Redirect from /b to /c")
         .redirectedBy()
         .assertCode(301)
-        .assertContainsHeaders("Test: Redirect from /a to /b");
+        .assertHeader("Test", "Redirect from /a to /b");
 
     assertEquals(0, server.takeRequest().getSequenceNumber()); // New connection.
     assertEquals(1, server.takeRequest().getSequenceNumber()); // Connection reused.
